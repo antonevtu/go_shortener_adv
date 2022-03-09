@@ -39,7 +39,7 @@ func NewRouter(repo Repositorier, cfgApp cfg.Config) chi.Router {
 		r.Post("/", handlerShortenURL(repo, cfgApp))
 		r.Post("/api/shorten", handlerShortenURLJSONAPI(repo, cfgApp))
 		r.Get("/{id}", handlerExpandURL(repo, cfgApp))
-		r.Get("/user/urls", handlerUserHistory(repo, cfgApp))
+		r.Get("/api/user/urls", handlerUserHistory(repo, cfgApp))
 		r.Get("/ping", handlerPingDB(repo))
 		r.Post("/api/shorten/batch", handlerShortenURLAPIBatch(repo, cfgApp))
 		r.Delete("/api/user/urls", handlerDelete(repo, cfgApp))
