@@ -26,7 +26,7 @@ func Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// database
+	// database0
 	dbPool, err := db.New(ctx, cfgApp.DatabaseDSN)
 	if err != nil {
 		log.Fatal(err)
