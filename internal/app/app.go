@@ -26,22 +26,25 @@ func Run() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// database0
-	dbPool, err := db.New(ctx, cfgApp.DatabaseDSN)
-	if err != nil {
-		log.Fatal(err)
+	// select repository
+	var repo handlers.Repositorier
+	if cfgApp.DatabaseDSN != "" {
+		// postgres
+		dbPool, err := db.New(ctx, cfgApp.DatabaseDSN)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer dbPool.Close()
+		repo = &dbPool
+	} else {
+		// file&map repository
+		fileRepo, err := repository.New(cfgApp.FileStoragePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer fileRepo.Close()
+		repo = fileRepo
 	}
-	defer dbPool.Close()
-
-	// file&map repository
-	fileRepo, err := repository.New(cfgApp.FileStoragePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fileRepo.Close()
-
-	repo := &dbPool
-	//repo := fileRepo
 
 	// repository pool for delete items (set flag "deleted")
 	deleterPool := pool.New(ctx, repo)
