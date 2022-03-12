@@ -62,7 +62,7 @@ func Run() {
 	// Run server
 	go func() {
 		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("HTTP server ListenAndServe: %v", err)
+			log.Fatalf("HTTP server ListenAndServe1: %v", err)
 		}
 	}()
 
