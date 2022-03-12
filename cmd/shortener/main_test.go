@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"bytes"
 	"context"
@@ -155,3 +156,4 @@ func migrations(dbPool db.T) {
 		panic(err)
 	}
 }
+*/
