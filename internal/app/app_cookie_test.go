@@ -70,7 +70,7 @@ func TestCookie(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test User history with true cookie
-	resp, urls := testGZipRequestCookie(t, ts.URL+"/user/urls", "GET", buf, cookies)
+	resp, urls := testGZipRequestCookie(t, ts.URL+"/api/user/urls", "GET", buf, cookies)
 	err = resp.Body.Close()
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -78,7 +78,7 @@ func TestCookie(t *testing.T) {
 
 	// Test User history with false cookie
 	cookies[0].Value = "4a03f9cb72d311ec9a6930c9abdb0255e0706164f46eddd837acfabfdc37ffb65275b7ca3f1e7cb9e113f4c79c33e910"
-	resp = testGZipRequestCookie204(t, ts.URL+"/user/urls", "GET", buf, cookies)
+	resp = testGZipRequestCookie204(t, ts.URL+"/api/user/urls", "GET", buf, cookies)
 	err = resp.Body.Close()
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, resp.StatusCode)
