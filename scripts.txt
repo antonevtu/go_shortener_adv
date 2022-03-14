@@ -1,5 +1,7 @@
 
 sudo docker run --name postgres -p 5432:5432  -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+sudo docker start a3f4dcd22c33
+
 -d postgres://postgres:mysecretpassword@localhost:5432/postgres -t 500
 -test.bench=. -test.memprofile=profiles/base.pprof
 

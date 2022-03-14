@@ -7,6 +7,8 @@ import (
 	"github.com/antonevtu/go_shortener_adv/internal/pool"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"net/http"
+	"net/http/pprof"
 )
 
 type Repositorier interface {
@@ -43,6 +45,49 @@ func NewRouter(repo Repositorier, cfgApp cfg.Config) chi.Router {
 		r.Get("/ping", handlerPingDB(repo))
 		r.Post("/api/shorten/batch", handlerShortenURLAPIBatch(repo, cfgApp))
 		r.Delete("/api/user/urls", handlerDelete(repo, cfgApp))
+
+		//r.Get("/pprof/profile", pprof.Profile)
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, r.RequestURI+"/pprof/", http.StatusMovedPermanently)
+		})
+		r.HandleFunc("/pprof", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, r.RequestURI+"/", http.StatusMovedPermanently)
+		})
+
+		r.HandleFunc("/debug/pprof/", pprof.Index)
+		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+		//r.HandleFunc("/pprof/*", pprof.Index)
+		//r.HandleFunc("/pprof/cmdline", pprof.Cmdline)
+		//r.HandleFunc("/pprof/profile", pprof.Profile)
+		//r.HandleFunc("/pprof/symbol", pprof.Symbol)
+		//r.HandleFunc("/pprof/trace", pprof.Trace)
+		//r.HandleFunc("/vars", expVars)
+
+		//r.Handle("/pprof/goroutine", pprof.Handler("goroutine"))
+		//r.Handle("/pprof/threadcreate", pprof.Handler("threadcreate"))
+		//r.Handle("/pprof/mutex", pprof.Handler("mutex"))
+		r.Handle("/pprof/heap", pprof.Handler("heap"))
+		//r.Handle("/pprof/block", pprof.Handler("block"))
+		//r.Handle("/pprof/allocs", pprof.Handler("allocs"))
 	})
 	return r
 }
+
+//// Replicated from expvar.go as not public.
+//func expVars(w http.ResponseWriter, r *http.Request) {
+//	first := true
+//	w.Header().Set("Content-Type", "application/json")
+//	fmt.Fprintf(w, "{\n")
+//	expvar.Do(func(kv expvar.KeyValue) {
+//		if !first {
+//			fmt.Fprintf(w, ",\n")
+//		}
+//		first = false
+//		fmt.Fprintf(w, "%q: %s", kv.Key, kv.Value)
+//	})
+//	fmt.Fprintf(w, "\n}\n")
+//}
