@@ -14,15 +14,21 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 )
 
 type requestURL struct {
 	URL string `json:"url"`
+}
+type responseURL struct {
+	Result string `json:"result"`
 }
 
 var (
@@ -50,28 +56,70 @@ func BenchmarkOne(b *testing.B) {
 	r := handlers.NewRouter(&database, cfgApp)
 	ts := httptest.NewServer(r)
 	defer ts.Close()
+	time.Sleep(3 * time.Second)
 
 	b.ResetTimer() // сбрасываем все счётчики
+	shortPaths := make([]string, 0, 1000)
 
-	for i := 0; i < b.N; i++ {
+	b.Run("shorten", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
 
-		// подготовка запроса
-		longURL := "https://yandex.ru/" + uuid.NewString()
-		reqAPI, err := json.Marshal(requestURL{URL: longURL})
-		if err != nil {
-			panic(err)
+			// подготовка запроса
+			longURL := "https://yandex.ru/" + uuid.NewString()
+			reqAPI, err := json.Marshal(requestURL{URL: longURL})
+			if err != nil {
+				panic(err)
+			}
+			client := &http.Client{}
+			req, err := http.NewRequest(http.MethodPost, ts.URL+"/api/shorten", bytes.NewBuffer(reqAPI))
+
+			b.StartTimer() // возобновляем таймер
+			resp, err := client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+			_ = resp
+			b.StopTimer() // останавливаем таймер
+
+			// сохраняем сокращенный путь
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				panic(err)
+			}
+			res := responseURL{}
+			err = json.Unmarshal(body, &res)
+			if err != nil {
+				panic(err)
+			}
+			u, err := url.Parse(res.Result)
+			shortPaths = append(shortPaths, u.Path)
 		}
-		client := &http.Client{}
-		req, err := http.NewRequest(http.MethodPost, ts.URL+"/api/shorten", bytes.NewBuffer(reqAPI))
+	})
 
-		b.StartTimer() // возобновляем таймер
-		resp, err := client.Do(req)
-		if err != nil {
-			panic(err)
+	b.Run("expand", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+
+			// подготовка запроса
+			n := rand.Intn(len(shortPaths))
+			client := &http.Client{}
+			req, err := http.NewRequest(http.MethodGet, ts.URL+shortPaths[n], bytes.NewBufferString(""))
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}
+
+			b.StartTimer() // возобновляем таймер
+			resp, err := client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+			_ = resp
+			b.StopTimer() // останавливаем таймер
+
+			if resp.StatusCode != http.StatusTemporaryRedirect {
+				panic(err)
+			}
 		}
-		_ = resp
-		b.StopTimer() // останавливаем таймер
-	}
+	})
 }
 
 func newConfig() cfg.Config {

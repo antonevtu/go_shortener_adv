@@ -36,6 +36,7 @@ func Run() {
 		}
 		defer dbPool.Close()
 		repo = &dbPool
+		log.Println("DB connected!")
 	} else {
 		// file&map repository
 		fileRepo, err := repository.New(cfgApp.FileStoragePath)
