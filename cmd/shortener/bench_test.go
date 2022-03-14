@@ -60,7 +60,7 @@ func BenchmarkOne(b *testing.B) {
 	time.Sleep(3 * time.Second)
 
 	b.ResetTimer() // сбрасываем все счётчики
-	shortPaths := make([]string, 0, 1000)
+	shortPaths := make([]string, 0, 10000)
 
 	b.Run("shorten", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
