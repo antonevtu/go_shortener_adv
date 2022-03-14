@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/antonevtu/go_shortener_adv/internal/cfg"
@@ -125,7 +126,7 @@ func BenchmarkOne(b *testing.B) {
 			b.StopTimer() // останавливаем таймер
 
 			if resp.StatusCode != http.StatusTemporaryRedirect {
-				panic(err)
+				panic(errors.New("invalid status temporary redirect"))
 			}
 		}
 	})
