@@ -72,13 +72,15 @@ func BenchmarkOne(b *testing.B) {
 			}
 			client := &http.Client{}
 			req, err := http.NewRequest(http.MethodPost, ts.URL+"/api/shorten", bytes.NewBuffer(reqAPI))
+			if err != nil {
+				panic(err)
+			}
 
 			b.StartTimer() // возобновляем таймер
 			resp, err := client.Do(req)
 			if err != nil {
 				panic(err)
 			}
-			_ = resp
 			b.StopTimer() // останавливаем таймер
 
 			// сохраняем сокращенный путь
@@ -86,12 +88,16 @@ func BenchmarkOne(b *testing.B) {
 			if err != nil {
 				panic(err)
 			}
+			_ = resp.Body.Close()
 			res := responseURL{}
 			err = json.Unmarshal(body, &res)
 			if err != nil {
 				panic(err)
 			}
 			u, err := url.Parse(res.Result)
+			if err != nil {
+				panic(err)
+			}
 			shortPaths = append(shortPaths, u.Path)
 		}
 	})
@@ -103,6 +109,9 @@ func BenchmarkOne(b *testing.B) {
 			n := rand.Intn(len(shortPaths))
 			client := &http.Client{}
 			req, err := http.NewRequest(http.MethodGet, ts.URL+shortPaths[n], bytes.NewBufferString(""))
+			if err != nil {
+				panic(err)
+			}
 			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
 			}
@@ -112,7 +121,7 @@ func BenchmarkOne(b *testing.B) {
 			if err != nil {
 				panic(err)
 			}
-			_ = resp
+			_ = resp.Body.Close()
 			b.StopTimer() // останавливаем таймер
 
 			if resp.StatusCode != http.StatusTemporaryRedirect {
