@@ -7,7 +7,6 @@ import (
 	"github.com/antonevtu/go_shortener_adv/internal/pool"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"net/http"
 	"net/http/pprof"
 )
 
@@ -47,12 +46,12 @@ func NewRouter(repo Repositorier, cfgApp cfg.Config) chi.Router {
 		r.Delete("/api/user/urls", handlerDelete(repo, cfgApp))
 
 		//r.Get("/pprof/profile", pprof.Profile)
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, r.RequestURI+"/pprof/", http.StatusMovedPermanently)
-		})
-		r.HandleFunc("/pprof", func(w http.ResponseWriter, r *http.Request) {
-			http.Redirect(w, r, r.RequestURI+"/", http.StatusMovedPermanently)
-		})
+		//r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		//	http.Redirect(w, r, r.RequestURI+"/pprof/", http.StatusMovedPermanently)
+		//})
+		//r.HandleFunc("/pprof", func(w http.ResponseWriter, r *http.Request) {
+		//	http.Redirect(w, r, r.RequestURI+"/", http.StatusMovedPermanently)
+		//})
 
 		r.HandleFunc("/debug/pprof/", pprof.Index)
 		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
