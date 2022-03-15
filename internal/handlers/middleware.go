@@ -37,7 +37,9 @@ func gzipRequestHandle(next http.Handler) http.Handler {
 func gzipResponseHandle(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// проверяем, что клиент поддерживает gzip-сжатие
-		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		tmp := r.Header.Get(`Content-Encoding`)
+		_ = tmp
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") || (r.Header.Get(`Content-Encoding`) != `gzip`) {
 			next.ServeHTTP(w, r)
 			return
 		}

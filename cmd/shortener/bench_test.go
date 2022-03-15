@@ -57,7 +57,7 @@ func BenchmarkOne(b *testing.B) {
 	r := handlers.NewRouter(&database, cfgApp)
 	ts := httptest.NewServer(r)
 	defer ts.Close()
-	time.Sleep(3 * time.Second)
+	//time.Sleep(3 * time.Second)
 
 	b.ResetTimer() // сбрасываем все счётчики
 	shortPaths := make([]string, 0, 10000)

@@ -3,10 +3,10 @@ sudo docker run --name postgres -p 5432:5432  -e POSTGRES_PASSWORD=mysecretpassw
 sudo docker start a3f4dcd22c33
 
 -d postgres://postgres:mysecretpassword@localhost:5432/postgres -t 500
--test.bench=. -test.memprofile=profiles/base.pprof
 
-go tool pprof -http=":9090" -seconds=30 http://localhost:8081/debug/pprof/heap
+go tool pprof -http=":9090" -seconds=30 http://localhost:8080/debug/pprof/heap
 go tool pprof -http=":9090" profiles/base.pprof
--test.bench=. -test.memprofile=profiles/result.pprof
 
+-test.bench=. -test.memprofile=profiles/base.pprof
+-test.bench=. -test.memprofile=profiles/result.pprof
 go tool pprof -top -diff_base=profiles/base.pprof profiles/result.pprof

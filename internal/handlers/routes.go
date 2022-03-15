@@ -64,14 +64,7 @@ func NewRouter(repo Repositorier, cfgApp cfg.Config) chi.Router {
 		r.Post("/api/shorten/batch", handlerShortenURLAPIBatch(repo, cfgApp))
 		r.Delete("/api/user/urls", handlerDelete(cfgApp))
 
-		//r.Get("/pprof/profile", pprof.Profile)
-		//r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		//	http.Redirect(w, r, r.RequestURI+"/pprof/", http.StatusMovedPermanently)
-		//})
-		//r.HandleFunc("/pprof", func(w http.ResponseWriter, r *http.Request) {
-		//	http.Redirect(w, r, r.RequestURI+"/", http.StatusMovedPermanently)
-		//})
-
+		// профилировщик
 		r.HandleFunc("/debug/pprof/", pprof.Index)
 		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
@@ -88,24 +81,9 @@ func NewRouter(repo Repositorier, cfgApp cfg.Config) chi.Router {
 		//r.Handle("/pprof/goroutine", pprof.Handler("goroutine"))
 		//r.Handle("/pprof/threadcreate", pprof.Handler("threadcreate"))
 		//r.Handle("/pprof/mutex", pprof.Handler("mutex"))
-		r.Handle("/pprof/heap", pprof.Handler("heap"))
+		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
 		//r.Handle("/pprof/block", pprof.Handler("block"))
 		//r.Handle("/pprof/allocs", pprof.Handler("allocs"))
 	})
 	return r
 }
-
-//// Replicated from expvar.go as not public.
-//func expVars(w http.ResponseWriter, r *http.Request) {
-//	first := true
-//	w.Header().Set("Content-Type", "application/json")
-//	fmt.Fprintf(w, "{\n")
-//	expvar.Do(func(kv expvar.KeyValue) {
-//		if !first {
-//			fmt.Fprintf(w, ",\n")
-//		}
-//		first = false
-//		fmt.Fprintf(w, "%q: %s", kv.Key, kv.Value)
-//	})
-//	fmt.Fprintf(w, "\n}\n")
-//}
