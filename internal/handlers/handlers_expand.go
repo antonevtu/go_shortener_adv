@@ -9,12 +9,8 @@ import (
 	"time"
 )
 
-type responseUserHistory []item
-type item struct {
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
+// handlerExpandURL receives shor id from URL request in format: /{id}
+// returns redirect to original long URL for any user
 func handlerExpandURL(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
@@ -36,6 +32,13 @@ func handlerExpandURL(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	}
 }
 
+type responseUserHistory []item
+type item struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}
+
+// handlerUserHistory returns array responseUserHistory by user ID, extracted from cookie
 func handlerUserHistory(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := getUserID(r)

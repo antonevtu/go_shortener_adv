@@ -20,12 +20,11 @@ type responseURL struct {
 	Result string `json:"result"`
 }
 
-type batchOutput []batchOutputItem
-type batchOutputItem struct {
-	CorrelationID string `json:"correlation_id"`
-	ShortURL      string `json:"short_url"`
-}
-
+//handlerShortenURLJSONAPI receives request for shorten URL from body in format requestURL.
+//Returns in body BaseURL + "/" + shortID in format responseURL.
+//If requested long URL already exists in repository, returns existing short URL.
+//UserID extracts from cookie.
+//Assigns userID for unknown user.
 func handlerShortenURLJSONAPI(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := getUserID(r)
@@ -88,6 +87,11 @@ func handlerShortenURLJSONAPI(repo Repositorier, cfgApp cfg.Config) http.Handler
 	}
 }
 
+//handlerShortenURLJSONAPI receives request for shorten URL from body in text format.
+//Returns in body BaseURL + "/" + shortID in text format.
+//If requested long URL already exists in repository, returns existing short URL.
+//UserID extracts from cookie.
+//Assigns userID for unknown user.
 func handlerShortenURL(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := getUserID(r)
@@ -134,6 +138,18 @@ func handlerShortenURL(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	}
 }
 
+type batchOutput []batchOutputItem
+type batchOutputItem struct {
+	CorrelationID string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+}
+
+//handlerShortenURLAPIBatch receives array of long URL from body in format db.BatchInput
+//for fast shorten in transaction mode.
+//Returns response in body in batchOutput format.
+//If any long URL exists in DB, returns error.
+//UserID extracts from cookie.
+//Assigns userID for unknown user.
 func handlerShortenURLAPIBatch(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := getUserID(r)
@@ -191,6 +207,7 @@ func handlerShortenURLAPIBatch(repo Repositorier, cfgApp cfg.Config) http.Handle
 	}
 }
 
+// handlerPingDB checks DB is alive
 func handlerPingDB(repo Repositorier) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := repo.Ping(r.Context())

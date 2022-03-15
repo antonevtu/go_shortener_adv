@@ -1,3 +1,6 @@
+//Package repository implements in-memory entity storage
+//Implements handlers.Repositorier interface, but some methods not supported (because this is education application)
+//Storage has backup in text file cfgApp.FileStoragePath
 package repository
 
 import (
@@ -11,6 +14,7 @@ import (
 	"sync"
 )
 
+//Repository is in-memory repository, based on map, with backup file writer for new records
 type Repository struct {
 	storage     storageT
 	storageLock sync.Mutex
@@ -24,6 +28,7 @@ type fileWriterT struct {
 	encoder *json.Encoder
 }
 
+//New returns new in-memory repository, restored from text file
 func New(fileName string) (*Repository, error) {
 	repository := Repository{
 		storage:    make(storageT, 100),
@@ -54,7 +59,6 @@ func (fw *fileWriterT) new(filename string) error {
 	return nil
 }
 
-// restoreFromFile Восстановление хранилища в оперативной памяти из текстового файла
 func (r *Repository) restoreFromFile(fileName string) error {
 	file, err := os.OpenFile(fileName, os.O_RDONLY|os.O_CREATE, 0777)
 	if err != nil {

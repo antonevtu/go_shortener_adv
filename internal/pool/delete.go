@@ -1,3 +1,5 @@
+//Package pool implements deferred deleting rows from DB
+//with goroutines pool.
 package pool
 
 import (

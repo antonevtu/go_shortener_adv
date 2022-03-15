@@ -1,3 +1,4 @@
+// Package db implements handlers.Repositorier interface for store short URL in Postgres database
 package db
 
 import (
@@ -15,6 +16,7 @@ type T struct {
 	*pgxpool.Pool
 }
 
+//Entity is row format for store one short URL
 type Entity struct {
 	Deleted bool   `json:"deleted"`
 	UserID  string `json:"user_id"`
@@ -22,16 +24,10 @@ type Entity struct {
 	LongURL string `json:"url"`
 }
 
-type BatchInput []BatchInputItem
-type BatchInputItem struct {
-	CorrelationID string `json:"correlation_id"`
-	OriginalURL   string `json:"original_url"`
-	ShortID       string `json:"-"`
-	Deleted       bool   `json:"-"`
-}
-
 var ErrUniqueViolation = errors.New("long URL already exist")
 
+//New returns object with new DB connection
+//Migrations applied if not exist
 func New(ctx context.Context, url string) (T, error) {
 	var pool T
 	var err error
@@ -55,6 +51,7 @@ func New(ctx context.Context, url string) (T, error) {
 	return pool, nil
 }
 
+//AddEntity adds new row Entity in DB. If long URL already exists, returns ErrUniqueViolation
 func (d *T) AddEntity(ctx context.Context, e Entity) error {
 	sql := "insert into urls values (default, $1, $2, $3, $4)"
 	_, err := d.Pool.Exec(ctx, sql, e.Deleted, e.UserID, e.ShortID, e.LongURL)
@@ -68,6 +65,7 @@ func (d *T) AddEntity(ctx context.Context, e Entity) error {
 	return err
 }
 
+//SelectByLongURL returns row Entity for known long URL
 func (d *T) SelectByLongURL(ctx context.Context, longURL string) (Entity, error) {
 	row := d.Pool.QueryRow(ctx, "select * from urls where long_url = $1", longURL)
 	var e Entity
@@ -76,6 +74,7 @@ func (d *T) SelectByLongURL(ctx context.Context, longURL string) (Entity, error)
 	return e, err
 }
 
+//SelectByShortID returns row Entity for known short ID
 func (d *T) SelectByShortID(ctx context.Context, shortID string) (Entity, error) {
 	row := d.Pool.QueryRow(ctx, "select * from urls where short_id = $1", shortID)
 	var e Entity
@@ -84,6 +83,7 @@ func (d *T) SelectByShortID(ctx context.Context, shortID string) (Entity, error)
 	return e, err
 }
 
+//SelectByUser returns all Entity rows for given userID
 func (d *T) SelectByUser(ctx context.Context, userID string) ([]Entity, error) {
 	rows, err := d.Pool.Query(ctx, "select * from urls where user_id = $1", userID)
 	if err != nil {
@@ -102,30 +102,16 @@ func (d *T) SelectByUser(ctx context.Context, userID string) ([]Entity, error) {
 	return eArray, nil
 }
 
-//func (d *T) AddEntityBatch(ctx context.Context, userID string, data BatchInput) error {
-//	tx, err := d.Begin(ctx)
-//	if err != nil {
-//		return err
-//	}
-//	defer tx.Rollback(ctx)
-//
-//	stmt, err := tx.Prepare(ctx, "batch", "insert into urls(deleted, user_id, short_id, long_url) VALUES($1, $2, $3, $4)")
-//	if err != nil {
-//		return err
-//	}
-//
-//	for _, v := range data {
-//		if _, err = tx.Exec(ctx, stmt.Name, v.Deleted, userID, v.ShortID, v.OriginalURL); err != nil {
-//			return err
-//		}
-//	}
-//
-//	if err := tx.Commit(ctx); err != nil {
-//		return fmt.Errorf("unable to commit: %w", err)
-//	}
-//	return err
-//}
+//BatchInput is slice for batched input several URL
+type BatchInput []BatchInputItem
+type BatchInputItem struct {
+	CorrelationID string `json:"correlation_id"`
+	OriginalURL   string `json:"original_url"`
+	ShortID       string `json:"-"`
+	Deleted       bool   `json:"-"`
+}
 
+//AddEntityBatch fast adds BatchInput in transaction mode
 func (d *T) AddEntityBatch(ctx context.Context, userID string, data BatchInput) error {
 	tx, err := d.Begin(ctx)
 	if err != nil {
@@ -150,6 +136,8 @@ func (d *T) AddEntityBatch(ctx context.Context, userID string, data BatchInput) 
 	return err
 }
 
+//SetDeletedBatch fast delete several Entities in transaction mode
+//Doesn't remove rows, only sets deleted flags = true
 func (d *T) SetDeletedBatch(ctx context.Context, userID string, shortIDs []string) error {
 	tx, err := d.Begin(ctx)
 	if err != nil {
@@ -177,6 +165,8 @@ func (d *T) SetDeletedBatch(ctx context.Context, userID string, shortIDs []strin
 	return err
 }
 
+//SetDeleted delete one row Entity.
+//Doesn't remove row, only sets deleted flag = true
 func (d *T) SetDeleted(ctx context.Context, item pool.ToDeleteItem) error {
 	sql := "update urls set deleted = true where short_id = $1 and user_id = $2"
 	_, err := d.Pool.Exec(ctx, sql, item.ShortID, item.UserID)

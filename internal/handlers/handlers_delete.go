@@ -10,7 +10,8 @@ import (
 
 type shortIDList []string
 
-func handlerDelete(repo Repositorier, cfgApp cfg.Config) http.HandlerFunc {
+// handlerDelete receives shortIDList from body and sends it to deleter pool for deferred execution
+func handlerDelete(cfgApp cfg.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userIDBytes, err := getUserID(r)
 		if err != nil {

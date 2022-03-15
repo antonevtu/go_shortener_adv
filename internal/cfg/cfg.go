@@ -1,3 +1,5 @@
+// Package cfg provides parsing system variables and command line flags for fetch service parameters.
+// Command line flags replaces system variables if set
 package cfg
 
 import (
