@@ -1,3 +1,5 @@
+//main used for test loading shortener module.
+//Loading using numberGoroutines clients and each client makes numberRequests requests
 package main
 
 import (
